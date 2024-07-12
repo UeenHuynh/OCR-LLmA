@@ -1,24 +1,22 @@
-import os
-import shutil
+import cv2
+from matplotlib import pyplot as plt
 
-def split_folder(source_folder, target_folders, split_size):
-    """Split source_folder into multiple target_folders with split_size each."""
-    files = os.listdir(source_folder)
-    total_files = len(files)
+img_path = "test_data_3.jpg"
+mat = cv2.imread(img_path)
+result = ocr_image(img_path)
 
-    for i, target_folder in enumerate(target_folders):
-        os.makedirs(target_folder, exist_ok=True)
-        start_index = i * split_size
-        end_index = min(start_index + split_size, total_files)
 
-        for j in range(start_index, end_index):
-            source_file = os.path.join(source_folder, files[j])
-            target_file = os.path.join(target_folder, files[j])
-            shutil.move(source_file, target_file)
+boxes = [line[0] for line in result]
+texts = [line[1] for line in result]
+scores = [line[2] for line in result]
 
-if __name__ == "__main__":
-    source_folder = "E:/Angel Hack/OCR-LLmA/FULL [Heineken Vietnam] Developer Resources"  # Update this with the path to your source folder
-    target_folders = ["E:/Angel Hack/OCR-LLmA/folder1", "E:/Angel Hack/OCR-LLmA/folder2", "E:/Angel Hack/OCR-LLmA/folder3"]  # Update these with your desired target folder names
-    split_size = 500  # Number of files per target folder (1500 / 3 = 500)
+for box, text in zip(boxes, texts):
+    top_left     = (int(box[0][0]), int(box[0][1]))
+    bottom_right = (int(box[2][0]), int(box[2][1]))
 
-    split_folder(source_folder, target_folders, split_size)
+    cv2.rectangle(mat, top_left, bottom_right, (0, 255, 0), 2)
+    cv2.putText(mat, text, top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
+
+mat = cv2.cvtColor(mat, cv2.COLOR_BGR2RGB)
+print(texts)
+plt.imshow(mat)
